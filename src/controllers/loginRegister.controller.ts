@@ -15,12 +15,17 @@ export class LoginRegisterController {
   ) {}
 
   @Post()
-  async creatUser(@Body() body, @Request() req) {
+  async user(@Body() body, @Request() req) {
     this.userInfo = _.cloneDeep(body.userInfo);
     this.userInfo.paw = this.crypto(this.userInfo.paw);
 
     try {
-      const documemt = await this.loginRegiseterRepository.findOne({userName: {$eq: this.userInfo.userName}});
+      let documemt;
+      if (body.loginType === 'email') {
+        documemt = await this.loginRegiseterRepository.findOne({email: {$eq: this.userInfo.userName}});
+      } else {
+        documemt = await this.loginRegiseterRepository.findOne({userName: {$eq: this.userInfo.userName}});
+      }
       if (body.loginStatus) { // 登陆状态，查询用户信息
         if (documemt) {
           // 判断密码是否正确
@@ -35,6 +40,9 @@ export class LoginRegisterController {
         }
       } else { // 注册
         if (documemt) return this.information('faild', '已注册，请尝试登录');
+
+        const emailVerify = await this.loginRegiseterRepository.findOne({email: {$eq: this.userInfo.email}});
+        if (emailVerify) return this.information('fail', '该邮箱已被注册');
 
         this.userInfo.registerDate = new Date();
         this.userInfo.avatar = '';

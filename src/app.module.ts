@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 
 // serivces
-import { AppService } from './app.service';
 import {DbModule} from './db/db.module';
 
 import {
@@ -14,13 +13,14 @@ import {
   AttentionController,
   DynamicPointGoodController,
   CommentController,
+  EmailController,
+  ResetPawController,
 } from './controllers';
 // 数据库表
 import {
   articlesProvider,
   LoginRegisterProvider,
   DynamicProvider,
-  mytestProvider,
   commentsProvider,
   AttentionProvider,
 } from './dbTable';
@@ -37,11 +37,11 @@ import {
     AttentionController,
     DynamicPointGoodController,
     CommentController,
+    EmailController,
+    ResetPawController,
   ],
   providers: [
-    AppService,
     AttentionProvider,
-    mytestProvider,
     LoginRegisterProvider,
     articlesProvider,
     DynamicProvider,

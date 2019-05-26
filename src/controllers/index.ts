@@ -6,3 +6,4 @@ export * from './dynamic';
 export * from  './comment';
 export * from './emailCode';
 export * from './loginRegister.controller';
+export * from './collection.controller';

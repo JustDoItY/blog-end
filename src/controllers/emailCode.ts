@@ -8,14 +8,13 @@ export class EmailController {
 
   constructor(
     @Inject('loginRegisterRepositoryToken')
-    private readonly loginRegiseterRepository: Model<LoginRegisterDocument>,
+    private readonly loginRegisterRepository: Model<LoginRegisterDocument>,
   ) {}
 
   @Post()
   async sendEmailRegisterCode(@Request() req, @Body() body) {
     // 校验用户是否存在
-
-    const document = await this.loginRegiseterRepository.findOne({email: body.eml});
+    const document = await this.loginRegisterRepository.findOne({email: body.eml});
     if (!document) return {retCode: 'fail', retMsg: '用户不存在'};
 
     const code = this.makeCode(); // 生成校验码，4位
@@ -53,7 +52,7 @@ export class EmailController {
 
   makeCode(){
     let code = '';
-
+    // 随机选取0-9数字
     for (let i = 0; i < 4; i++) {
       code  = Math.floor(Math.random() * 9).toString() + code;
     }

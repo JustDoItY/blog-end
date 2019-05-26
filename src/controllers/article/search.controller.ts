@@ -28,7 +28,11 @@ export class SearchController {
       avatar = req.session.userInfo.avatar;
     }
     const article = await this.articlesRepository.findById(id).populate('userID', { userName: 1, avatar: 1 }).exec();
-    return {article, loginID, avatar};
+    if (article) {
+      return {retCode: 'success', retMsg: '查询成功', content: article, loginID, avatar};
+    } else {
+      return {retCode: 'faild', retMsg: '文章已被删除', content: null};
+    }
   }
 
   @Post()

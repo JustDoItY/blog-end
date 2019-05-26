@@ -15,6 +15,7 @@ import {
   CommentController,
   EmailController,
   ResetPawController,
+  CollectionController,
 } from './controllers';
 // 数据库表
 import {
@@ -23,6 +24,7 @@ import {
   DynamicProvider,
   commentsProvider,
   AttentionProvider,
+  CollectionProvider,
 } from './dbTable';
 
 @Module({
@@ -39,6 +41,7 @@ import {
     CommentController,
     EmailController,
     ResetPawController,
+    CollectionController,
   ],
   providers: [
     AttentionProvider,
@@ -46,6 +49,7 @@ import {
     articlesProvider,
     DynamicProvider,
     commentsProvider,
+    CollectionProvider,
   ],
 })
 export class AppModule { }

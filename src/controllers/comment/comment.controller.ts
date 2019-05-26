@@ -4,7 +4,6 @@ import { Model } from 'mongoose';
 import * as _ from 'lodash';
 
 import { CommentDocument } from '../../dbType/comment';
-import { ObjectID } from 'bson';
 
 @Controller('comment')
 export class CommentController {

@@ -10,16 +10,17 @@ import { LoginRegisterDocument } from '../dbType/loginRegister';
 export class ResetPawController {
   constructor(
     @Inject('loginRegisterRepositoryToken')
-    private readonly loginRegiseterRepository: Model<LoginRegisterDocument>,
+    private readonly loginRegisterRepository: Model<LoginRegisterDocument>,
   ) {}
 
   @Post()
-  async setPaw(@Body() body){
+  async setPaw(@Body() body, @Request() req){
 
     try {
-      const res = await this.loginRegiseterRepository.updateOne({email: body.emailAddress}, {$set: {paw: this.crypto(body.paw)}});
+      const res = await this.loginRegisterRepository.updateOne({email: body.emailAddress}, {$set: {paw: this.crypto(body.paw)}});
       if (res) {
-        return {retCode: 'success', retMsg: '更新成功'};
+        req.session.userInfo = null; // 清掉session
+        return {retCode: 'success', retMsg: '更新成功,请重新登录'};
       } else {
         return {retCode: 'fail', retMsg: '用户不存在'};
       }

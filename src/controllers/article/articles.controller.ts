@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import * as _ from 'lodash';
 
 import { ArticleDocument } from '../../dbType/article';
+import { CommentDocument } from '../../dbType/comment';
 
 @Controller('articles')
 export class ArticlesController {
@@ -11,16 +12,21 @@ export class ArticlesController {
   constructor(
     @Inject('articlesRepositoryToken')
     private readonly articlesRepository: Model<ArticleDocument>,
+    @Inject('commentsRepositoryToken')
+    private readonly commentsRepository: Model<CommentDocument>,
   ) {}
 
   @Post()
   async saveArticle(@Body() body, @Request() req) {
+    // 如果处于登录状态，才会继续处理文章，如果未登录，直接返回，不予处理。
     if (req.session.userInfo) {
+      // 如果有文章id，说明处于编辑状态，需要更新文章信息
       if (body.articleId) {
         await this.articlesRepository.updateOne(
-          {_id: body.articleId},
-          {$set: {title: body.title, content: body.articleContent}});
+          {_id: body.articleId}, // 用id查找文章
+          {$set: {title: body.title, content: body.articleContent}}); // 更新标题和内容
       } else {
+        // 处于发布状态，向数据库插入文章
         await this.articlesRepository.insertMany({
           title: body.title,
           content: body.articleContent,
@@ -30,6 +36,7 @@ export class ArticlesController {
       }
       return {retCode: 'success', retMsg: '保存成功'};
     } else {
+      // 为处于登录状态，直接返回，提示
       return {retCode: 'fail', retMsg: '请重新登录'};
     }
   }
@@ -49,7 +56,7 @@ export class ArticlesController {
     const userInfo = req.session.userInfo;
     if (!userInfo) return {articles: null, retCode: 'fail', retMsg: '请重新登录'};
     await this.articlesRepository.deleteOne({_id: id});
-    const articles = await this.articlesRepository.find({userID: userInfo._id}).populate('userID', {userName: 1}).sort({writeDate: -1}).exec();
-    return {content: articles, retCode: 'success', retMsg: '删除成功'};
+    await this.commentsRepository.deleteMany({articleID: id}); // 删除评论内容
+    return {retCode: 'success', retMsg: '删除成功'};
   }
 }

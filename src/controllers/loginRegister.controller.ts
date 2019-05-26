@@ -11,7 +11,7 @@ export class LoginRegisterController {
   userInfo = null;
   constructor(
     @Inject('loginRegisterRepositoryToken')
-    private readonly loginRegiseterRepository: Model<LoginRegisterDocument>,
+    private readonly loginRegisterRepository: Model<LoginRegisterDocument>,
   ) {}
 
   @Post()
@@ -21,16 +21,17 @@ export class LoginRegisterController {
 
     try {
       let documemt;
+      // 判断用户登录类型，如果是邮箱登录，就会以邮箱搜索用户，否则用用户名搜索
       if (body.loginType === 'email') {
-        documemt = await this.loginRegiseterRepository.findOne({email: {$eq: this.userInfo.userName}});
+        documemt = await this.loginRegisterRepository.findOne({email: {$eq: this.userInfo.userName}});
       } else {
-        documemt = await this.loginRegiseterRepository.findOne({userName: {$eq: this.userInfo.userName}});
+        documemt = await this.loginRegisterRepository.findOne({userName: {$eq: this.userInfo.userName}});
       }
       if (body.loginStatus) { // 登陆状态，查询用户信息
         if (documemt) {
           // 判断密码是否正确
           if (this.userInfo.paw !== documemt.paw) return this.information('faild', '密码不正确');
-
+          // 设置session
           const doc = documemt.toObject();
           delete doc.paw; // 删除密码，返回用户信息
           req.session.userInfo = doc;
@@ -40,13 +41,13 @@ export class LoginRegisterController {
         }
       } else { // 注册
         if (documemt) return this.information('faild', '已注册，请尝试登录');
-
-        const emailVerify = await this.loginRegiseterRepository.findOne({email: {$eq: this.userInfo.email}});
+        // 如果当前用户名不存在用户，再次核查邮箱是否被注册，如果邮箱未被注册，继续注册
+        const emailVerify = await this.loginRegisterRepository.findOne({email: {$eq: this.userInfo.email}});
         if (emailVerify) return this.information('fail', '该邮箱已被注册');
-
+        // 注册用户信息
         this.userInfo.registerDate = new Date();
         this.userInfo.avatar = '';
-        await this.loginRegiseterRepository.insertMany(this.userInfo);
+        await this.loginRegisterRepository.insertMany(this.userInfo);
         return this.information('success', '注册成功，请登陆');
       }
     } catch (error) {

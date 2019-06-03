@@ -13,14 +13,16 @@ export class SearchController {
   ) {}
 
   @Get()
-  async findPage(@Query() query) {
-    const articles = await this.articlesRepository.find({}, { title: 1, writeDate: 1, good: 1 })
-                     .populate('userID', { userName: 1, avatar: 1 }).sort({writeDate: -1}).exec();
-    return {articles};
+  async findPage(@Query('pageIndex') pageIndex, @Query('field') field) {
+    const reg = field ? {title: {$regex: field, $options: 'i'}} : {};
+    const count = await this.articlesRepository.count(reg);
+    const articles = await this.articlesRepository.find(reg, { title: 1, writeDate: 1, good: 1 })
+                     .populate('userID', { userName: 1, avatar: 1 }).sort({writeDate: -1}).skip((pageIndex - 1) * 5).limit(5).exec();
+    return {articles, total: Math.ceil(count / 5), field};
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id, @Request() req) {
+  @Post()
+  async findOne(@Body('id') id, @Request() req) {
     let loginID = '';
     let avatar = '';
     if (req.session.userInfo) {
@@ -33,12 +35,5 @@ export class SearchController {
     } else {
       return {retCode: 'faild', retMsg: '文章已被删除', content: null};
     }
-  }
-
-  @Post()
-  async searchByField(@Body() body) {
-    const articles = await this.articlesRepository.find({title: {$regex: body.field, $options: 'i'}})
-                           .populate('userID', { userName: 1, avatar: 1 }).sort({writeDate: -1}).exec();
-    return {articles};
   }
 }

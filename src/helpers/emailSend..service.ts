@@ -9,7 +9,7 @@ export const SendEmailService = {
       html: null, // 发送内容
     },
 
-    sendMSg(html, to, subject, code) {
+    sendMSg(html, to, subject, code = null) {
         this.mailOption.to = to;
         this.mailOption.subject = subject;
         this.mailOption.html = `<h1>${html}</h1>`;

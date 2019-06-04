@@ -4,12 +4,16 @@ import { Model } from 'mongoose';
 import * as _ from 'lodash';
 
 import { CommentDocument } from '../../dbType/comment';
+import { LoginRegisterDocument } from '../../dbType/loginRegister';
+import { SendEmailService } from '../../helpers/emailSend..service';
 
 @Controller('comment')
 export class CommentController {
   constructor(
     @Inject('commentsRepositoryToken')
     private readonly commentsRepository: Model<CommentDocument>,
+    @Inject('loginRegisterRepositoryToken')
+    private readonly loginRegisterRepository: Model<LoginRegisterDocument>,
   ) {}
 
   @Post()
@@ -17,9 +21,12 @@ export class CommentController {
     if (!req.session.userInfo) return { retCode: 'fail', retMsg: '请登录后评论', content: null };
     const comment = _.cloneDeep(body);
     comment.writeDate = new Date();
-    await this.commentsRepository.insertMany(comment);
     const content = await this.commentsRepository.find({articleID: body.articleID})
                           .populate('fromID', {userName: 1, avatar: 1}).sort({writeDate: -1});
+    // 对用户发送评论信息
+    const fromUser = await this.loginRegisterRepository.findById(comment.fromID);
+    const toUser = await this.loginRegisterRepository.findById(comment.toID);
+    SendEmailService.sendMSg(`${fromUser.userName}:${comment.content}`, toUser.email, '个人博客评论');
     return { retCode: 'success', retMsg: '保存成功', content };
   }
 

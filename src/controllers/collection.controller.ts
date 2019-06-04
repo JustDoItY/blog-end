@@ -1,7 +1,6 @@
 import { Body, Controller, Delete, Get, Post, Request, Query } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 
-import * as crypto from 'crypto';
 import * as _ from 'lodash';
 import { Model } from 'mongoose';
 
@@ -31,12 +30,19 @@ export class CollectionController {
 
     @Get()
     async getCollections(@Query('collector') collector) {
-      // 删除不存在的文章收藏
-      await this.collectionRepository.deleteMany({'articleID._id': null}).populate('articleID');
       try {
           const documents = await this.collectionRepository.find({collectorID: collector})
                                                            .populate('articleID').populate('authorID');
+
           if (documents.length) {
+            // 处理已被删除的文章
+            documents.forEach(async (document, i) => {
+              if (!document.articleID) {
+                documents.splice(i, 1);
+                await this.collectionRepository.findByIdAndDelete(document._id);
+              }
+            });
+
             return {retCode: 'success', retMsg: '查找成功', content: documents};
           }
           else return {retCode: 'faild', retMsg: '查找失败'};

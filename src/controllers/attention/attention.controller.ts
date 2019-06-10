@@ -23,14 +23,14 @@ export class AttentionController {
   async saveAttention(@Body() body) {
     const item = await this.attentionRepository.findOne(body);
     if (item) return {retCode: 'fail', retMsg: '请不要重复关注', content: null};
-    const attentionInfo = await this.attentionRepository.insertMany(body);
+    await this.attentionRepository.insertMany(body);
     return {retCode: 'success', retMsg: '关注成功', content: null};
   }
 
   @Delete()
   async deleteFollower(@Query('id') id) {
     try {
-      const item = await this.attentionRepository.findByIdAndDelete(id);
+      await this.attentionRepository.findByIdAndDelete(id);
       return {retCode: 'success', retMsg: '取消关注成功', content: null};
     } catch (error) {
       return {retCode: 'faild', retMsg: '未知原因', content: null};

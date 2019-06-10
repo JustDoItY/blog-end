@@ -18,11 +18,15 @@ export class CommentController {
 
   @Post()
   async saveComment(@Body() body, @Request() req) {
+    // 处于非登录状态，不可评论
     if (!req.session.userInfo) return { retCode: 'fail', retMsg: '请登录后评论', content: null };
     const comment = _.cloneDeep(body);
     comment.writeDate = new Date();
+    // 保存评论信息
+    await this.commentsRepository.insertMany(comment);
     const content = await this.commentsRepository.find({articleID: body.articleID})
-                          .populate('fromID', {userName: 1, avatar: 1}).sort({writeDate: -1});
+    .populate('fromID', {userName: 1, avatar: 1}).sort({writeDate: -1});
+
     // 对用户发送评论信息
     const fromUser = await this.loginRegisterRepository.findById(comment.fromID);
     const toUser = await this.loginRegisterRepository.findById(comment.toID);

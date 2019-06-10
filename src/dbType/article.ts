@@ -7,6 +7,7 @@ export interface ArticleDocument extends Document {
   content: string;
   writeDate: Date;
   good: number;
+  subject: string;
   userID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'logins',
@@ -19,6 +20,7 @@ export const ArticleSchema = new mongoose.Schema({
   content: String,
   writeDate: Date,
   good: Number,
+  subject: String,
   userID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'logins',

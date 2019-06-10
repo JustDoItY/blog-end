@@ -29,7 +29,7 @@ export class UserController {
         }
       }
 
-      // 非登录用户
+      // 获取非登录用户信息
       const doc = await this.loginRegisterRepository.findOne({_id: id.toString()});
       const user = doc.toObject();
       delete user.paw; // 删除密码，返回用户信息
@@ -44,24 +44,21 @@ export class UserController {
     try {
       const userInfo = _.cloneDeep(req.session.userInfo);
       if (!userInfo) return { retCode: 'fail', retMsg: '请重新登录', userInfo: null };
+      // 核查用户名或邮箱是否可用
       // 根据用户名查询用户
-      const item = await this.loginRegisterRepository.findOne({ userName: body.userName });
+      const item = await this.loginRegisterRepository.findOne({_id: {$ne: userInfo._id}, userName: body.userName });
       // 根据邮箱查询用户
-      const emailVerify = await this.loginRegisterRepository.findOne({email: {$eq: body.email}});
+      const emailVerify = await this.loginRegisterRepository.findOne({_id: {$ne: userInfo._id}, email: {$eq: body.email}});
       // 以下两个if语句，都通过才可以更新信息，否则不可以
       if (item) {
-        const obj = item.toObject();
-        // 两个用户id不同，说明不是当前用户，故用户名已被注册
-        if (obj._id.toString().localeCompare(userInfo._id)) return {
+        return {
           retCode: 'fail',
           retMsg: '用户名存在',
           userInfo: null,
         };
       }
       if (emailVerify) {
-        const obj = emailVerify.toObject();
-         // 两个用户id不同，说明不是当前用户，故邮箱已被注册
-        if (obj._id.toString().localeCompare(userInfo._id)) return {
+        return {
           retCode: 'fail',
           retMsg: '修改失败，该邮箱已被注册',
           userInfo: null,

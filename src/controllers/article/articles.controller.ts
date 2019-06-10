@@ -24,19 +24,20 @@ export class ArticlesController {
       if (body.articleId) {
         await this.articlesRepository.updateOne(
           {_id: body.articleId}, // 用id查找文章
-          {$set: {title: body.title, content: body.articleContent}}); // 更新标题和内容
+          {$set: {title: body.title, content: body.articleContent, subject: body.subject}}); // 更新标题和内容
       } else {
-        // 处于发布状态，向数据库插入文章
+        // 处于保存状态，向数据库插入文章
         await this.articlesRepository.insertMany({
           title: body.title,
           content: body.articleContent,
           writeDate: new Date(),
+          subject: body.subject,
           good: 0,
           userID: req.session.userInfo._id });
       }
       return {retCode: 'success', retMsg: '保存成功'};
     } else {
-      // 为处于登录状态，直接返回，提示
+      // 未处于登录状态，直接返回
       return {retCode: 'fail', retMsg: '请重新登录'};
     }
   }

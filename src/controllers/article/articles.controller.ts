@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Post, Request, Get, Query } from '@nestjs/com
 import { Inject } from '@nestjs/common';
 import { Model } from 'mongoose';
 import * as _ from 'lodash';
+import * as moment from 'moment';
 
 import { ArticleDocument } from '../../dbType/article';
 import { CommentDocument } from '../../dbType/comment';
@@ -26,6 +27,17 @@ export class ArticlesController {
           {_id: body.articleId}, // 用id查找文章
           {$set: {title: body.title, content: body.articleContent, subject: body.subject}}); // 更新标题和内容
       } else {
+        const today = moment().set({hours : 0, minute: 0, second : 0});
+        // 查询每日发表文章
+        const articleLimitCount = await this.articlesRepository.countDocuments({
+          userID: req.session.userInfo._id,
+          writeDate: {
+          $gt: new Date(today.format()),
+          $lt: new Date(today.add(1, 'day').format())},
+        });
+        // 每天文章上限为2篇
+        if (articleLimitCount > 2) return {retCode: 'fail', retMsg: '超过每日文章上限'};
+
         // 处于保存状态，向数据库插入文章
         await this.articlesRepository.insertMany({
           title: body.title,
@@ -38,7 +50,7 @@ export class ArticlesController {
       return {retCode: 'success', retMsg: '保存成功'};
     } else {
       // 未处于登录状态，直接返回
-      return {retCode: 'fail', retMsg: '请重新登录'};
+      return {retCode: 'fail', retMsg: '请登录'};
     }
   }
 

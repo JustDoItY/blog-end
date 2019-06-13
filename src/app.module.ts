@@ -25,6 +25,7 @@ import {
   commentsProvider,
   AttentionProvider,
   CollectionProvider,
+  LikesProvider,
 } from './dbTable';
 
 @Module({
@@ -50,6 +51,7 @@ import {
     DynamicProvider,
     commentsProvider,
     CollectionProvider,
+    LikesProvider,
   ],
 })
 export class AppModule { }

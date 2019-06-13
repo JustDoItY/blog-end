@@ -36,7 +36,7 @@ export class ArticlesController {
           $lt: new Date(today.add(1, 'day').format())},
         });
         // 每天文章上限为2篇
-        if (articleLimitCount > 2) return {retCode: 'fail', retMsg: '超过每日文章上限'};
+        if (articleLimitCount >= 2) return {retCode: 'fail', retMsg: '超过每日文章上限'};
 
         // 处于保存状态，向数据库插入文章
         await this.articlesRepository.insertMany({

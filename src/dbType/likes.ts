@@ -11,8 +11,8 @@ export interface LikesDocument extends Document {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'logins',
   };
-  infoID: string; // 被评论信息id
-  infoType: string; // 被评论信息类型
+  infoID: string; // 被点赞信息id
+  infoType: string; // 被点赞信息类型
   date: Date;
 }
 
@@ -27,6 +27,6 @@ export const LikesSchema = new mongoose.Schema({
     ref: 'logins',
   },
   infoID: String,
-  type: String,
+  infoType: String,
   date: Date,
 });
